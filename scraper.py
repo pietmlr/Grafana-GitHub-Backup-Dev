@@ -12,7 +12,7 @@ import requests
 
 # Grafana things
 GRAFANA_DASHBOARD_UID_POV = '0A0OtHqnk'
-GRAFANA_DASHBOARD_UID = 'GD56qOq7z'
+GRAFANA_DASHBOARD_UID = 'SlSDRF37k'
 GRAFANA_API_TOKEN = 'eyJrIjoiV29ycTJvOG55VUo0V1pDVVhWOGh3UDRnRmI0UHppMjkiLCJuIjoicHJha3Rpa3VtMiIsImlkIjoxfQ=='
 GRAFANA_URL = f'http://localhost:3000/api/dashboards/uid/{GRAFANA_DASHBOARD_UID}'
 
@@ -76,6 +76,7 @@ def modified(str1: str, str2: str):
         print('MD5 Hashes are not the same') 
         return True # modified
 
+# cant download recursively --> nested limit of 1 folder, so: folder_xy/file.abc
 def downloadRepositoryFileContents():
     
     # GraphQL query
@@ -84,14 +85,23 @@ def downloadRepositoryFileContents():
             repository(owner: $owner, name: $name) {
                 object(expression: "HEAD:") {
                     ... on Tree {
-                            entries {
+                        entries {
                             name
-                            type
-                            mode
-                            
                             object {
                                 ... on Blob {
-                                text
+                                    text
+                                }
+                                
+                                # one level down
+                                ... on Tree {
+                                    entries {
+                                        name
+                                        object {
+                                            ... on Blob {
+                                                text
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -154,15 +164,19 @@ def getLatestCommitOiD():
     return most_recent_commit_oid
 
 # Create GitHub Commit to GitHub GraphQL API
-def createGitHubCommit(commit_headline_message: str, fileChanged: str, contentToCommit: str, fileIndex: int = 0):
+def createGitHubCommit(commit_headline_message: str, fileChanged: str, foldername: str, contentToCommit: str, fileIndex: int = 0):
 
-    #print(contentToCommit, type(contentToCommit))
+    # Set dashboard name to filename
     filename = json.loads(contentToCommit)['dashboard']['title'] + fileChanged
+    path = foldername + '/' + filename
     print(filename)
 
+    print(downloadRepositoryFileContents())
     # First of all, check if the file needs to be overwritten
     # [:-1] for removing the last character '\n' added by GitHub
+    
     current_file_content = json.loads(downloadRepositoryFileContents())['data']['repository']['object']['entries'][fileIndex]['object']['text'][:-1]
+    #print(current_file_content)
     
     print(f'Checking "{filename}" for commit')
     
@@ -204,7 +218,7 @@ def createGitHubCommit(commit_headline_message: str, fileChanged: str, contentTo
             'fileChanges': {
                 'additions': [
                     {
-                        'path': filename,
+                        'path': path,
                         'contents': base64encode(contentToCommit + '\n')
                     }
                 ]
@@ -228,12 +242,13 @@ def createGitHubCommit(commit_headline_message: str, fileChanged: str, contentTo
     
     printHTTPStatus(commit_response.status_code, 'GitHub')
     commit_response = json.dumps(commit_response.json(), indent=4)
+    print(commit_response)
     current_commit_url = json.loads(commit_response)['data']['createCommitOnBranch']['commit']['url']
     current_commit_oid = json.loads(commit_response)['data']['createCommitOnBranch']['commit']['oid']
     
-    print(f'Commited Grafana Dashboard "{filename}" to GitHub [Commit-OiD: (short) {current_commit_oid[:7]}, (long) {current_commit_oid}]\nAccessible through the following URL: {current_commit_url}')
+    print(f'Commited Grafana Dashboard "{path}" to GitHub [Commit-OiD: (short) {current_commit_oid[:7]}, (long) {current_commit_oid}]\nAccessible through the following URL: {current_commit_url}')
     
-#createGitHubCommit(commit_headline_message='Overwrite test', fileChanged=FILENAMING_SCHEME, contentToCommit=getGrafanaJSON())
+createGitHubCommit(commit_headline_message='Folder creation test', fileChanged=FILENAMING_SCHEME, foldername='folder 1', contentToCommit=getGrafanaJSON())
 
 ### Download and install Grafana JSON from GitHub into Grafana instance ###
 def reinstallGrafanaJSON(overwrite: bool = False, create_copy: bool = False, fileIndex: int = 0, folderId: int = 1):
@@ -352,11 +367,14 @@ def getDashboardsInFolder(folderId: int):
 # print([folder.uid for folder in getAllFolders()])
 # print([folder.title for folder in getAllFolders()])
 # print([folder.toJSON() for folder in getAllFolders()])
-print([folder.id for folder in getAllFolders()]) # add folderId=0 and title="General"
+#print([folder.id for folder in getAllFolders()]) # add folderId=0 and title="General"
+
+### Create new folders in GitHub repository ###
 
 
+### CoreCLI class (main) ###
 class CoreCLI():
     all_folders = []
     
-    def backup(everything: bool = False, path: str = None, overwrite: bool =  False, create_copy: bool = False): pass
-    def publish(): pass
+    def backup(everything: bool = False, path: str = None): pass
+    def publish(everything: bool = False, path: str = None, overwrite: bool =  False, create_copy: bool = False): pass

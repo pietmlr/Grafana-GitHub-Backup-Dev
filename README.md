@@ -18,6 +18,10 @@
     which will not delete the existing dashboard but rather uploads the GitHub 
     dashboard seperately with a name similar to "NAME-Copy-Y/m/d-H:M:S"
 
+# ToDo
+- [ ] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
+- [ ] Test upload of a whole folder
+
 # Upcoming Features
 - [x] Downloading Grafana dashboard JSON models
 - [x] Commiting Grafana dashboard JSON models to GitHub
