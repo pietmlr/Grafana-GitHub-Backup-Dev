@@ -19,22 +19,22 @@
     dashboard seperately with a name similar to "NAME-Copy-Y/m/d-H:M:S"
 
 # Upcoming Features
-- Break code into modules
-- Mirror folder structure of Grafana on GitHub
-    - Remirror folder structure on backup from GitHub to Grafana
-        - Using update in dashboard meta data 
-- Using Grafana version history comments as github commit headlines 
-- Commmand Line Interface using Shell
-- Dokumentation
+- [ ] Break code into modules
+- [ ] Mirror folder structure of Grafana on GitHub
+    - [ ] Remirror folder structure on backup from GitHub to Grafana
+        - [ ] Using update in dashboard meta data 
+- [ ] Using Grafana version history comments as github commit headlines 
+- [ ] Commmand Line Interface using Shell
+- [ ] Dokumentation
 
 # Modulstruktur
-- Folder
-- Dashboard
-- Core (CLI)(main)
-    - Calls further methods
-- Connector
-    - GrafanaConnector
-    - GitHubConnector
-- Config 
-    - Scraper-Config.config (into .gitignore)
+- [ ] Folder
+- [ ] Dashboard?
+- [ ] Core (CLI)(main)
+    - [ ] Calls further methods
+- [ ] Connector (necessary?)
+    - [ ] GrafanaConnector
+    - [ ] GitHubConnector
+- [ ] Config 
+    - [ ] Scraper-Config.config (into .gitignore)
         -  For saving API_KEYS

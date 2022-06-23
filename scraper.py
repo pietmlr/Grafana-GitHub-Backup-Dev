@@ -344,7 +344,6 @@ def getAllFolders():
     else: 
         raise Exception(f'Request failed code {response.status_code}')
     
-
 def getDashboardsInFolder(folderId: int):
     pass
 
@@ -355,6 +354,9 @@ def getDashboardsInFolder(folderId: int):
 # print([folder.toJSON() for folder in getAllFolders()])
 print([folder.id for folder in getAllFolders()]) # add folderId=0 and title="General"
 
+
 class CoreCLI():
     all_folders = []
     
+    def backup(everything: bool = False, path: str = None, overwrite: bool =  False, create_copy: bool = False): pass
+    def publish(): pass
