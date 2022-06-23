@@ -19,8 +19,14 @@
     dashboard seperately with a name similar to "NAME-Copy-Y/m/d-H:M:S"
 
 # Upcoming Features
+- [x] Downloading Grafana dashboard JSON models
+- [x] Commiting Grafana dashboard JSON models to GitHub
+- [x] Downloading Grafana dashboard JSON models from GitHub
+- [x] Installing Grafana dashboards into Grafana with the following options:
+    * overwrite
+    * create_copy
 - [ ] Break code into modules
-- [ ] Mirror folder structure of Grafana on GitHub
+- [ ] Mirror folder structure of Grafana on GitHub (ACTIVE)
     - [ ] Remirror folder structure on backup from GitHub to Grafana
         - [ ] Using update in dashboard meta data 
 - [ ] Using Grafana version history comments as github commit headlines 
@@ -28,7 +34,7 @@
 - [ ] Dokumentation
 
 # Modulstruktur
-- [ ] Folder
+- [x] Folder
 - [ ] Dashboard?
 - [ ] Core (CLI)(main)
     - [ ] Calls further methods
