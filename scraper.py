@@ -10,13 +10,13 @@ import requests
 # 1. Find dashboard UID
 # 2. 
 
-# Grafana
+# Grafana things
 GRAFANA_DASHBOARD_UID_POV = '0A0OtHqnk'
-GRAFANA_DASHBOARD_UID = 'Vv3c-Nq7z'
+GRAFANA_DASHBOARD_UID = 'GD56qOq7z'
 GRAFANA_API_TOKEN = 'eyJrIjoiV29ycTJvOG55VUo0V1pDVVhWOGh3UDRnRmI0UHppMjkiLCJuIjoicHJha3Rpa3VtMiIsImlkIjoxfQ=='
 GRAFANA_URL = f'http://localhost:3000/api/dashboards/uid/{GRAFANA_DASHBOARD_UID}'
 
-# GitHub
+# GitHub things
 GITHUB_API_TOKEN = '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'
 GITHUB_REPOSITORY_NAME = 'grafana-github-backup'
 GITHUB_REPOSITORY_OWNER = 'pietmlr'
@@ -67,6 +67,8 @@ def base64encode(string: str):
     
 # A faster way to compare larger string using MD5 hashes
 def modified(str1: str, str2: str):
+    print(hashlib.md5(str1.encode()).hexdigest())
+    print(hashlib.md5(str2.encode()).hexdigest())
     if hashlib.md5(str1.encode()).hexdigest() == hashlib.md5(str2.encode()).hexdigest():
         print('MD5 Hashes are the same')
         return False # Not Modified
@@ -170,7 +172,10 @@ def createGitHubCommit(commit_headline_message: str, fileChanged: str, contentTo
         return 
     else:
         print('The dashboard files need to be upgraded (File is modified)')
-    
+        
+    print(current_file_content)
+    print(contentToCommit)
+        
     most_recent_commit_oid = getLatestCommitOiD()
     most_recent_commit_oid = json.loads(most_recent_commit_oid)['data']['repository']['ref']['target']['oid']
     # most_recent_commit_oid[:7] GitHub mostly shows the first 7 characters of the sha-1 commit oid hash
@@ -247,6 +252,7 @@ def reinstallGrafanaJSON(overwrite: bool = False, create_copy: bool = False, fil
     if overwrite:
         grafana_json['dashboard'].update(overwrite=True)
         dashboard_name = grafana_json['dashboard']['title']
+        create_copy = False
     elif create_copy:
         dashboard_name = grafana_json['dashboard']['title'] + '-Copy-' + datetime.now().strftime('%Y/%m/%d-%H:%M:%S')
         overwrite = False
@@ -314,7 +320,7 @@ def reinstallGrafanaJSON(overwrite: bool = False, create_copy: bool = False, fil
         error_message = reinstall_dashboard_req.json()['message']
         print(f'Error message: {error_message}')
 
-#reinstallGrafanaJSON(folderId=36)
+#reinstallGrafanaJSON(folderId=0)
 
 # Get all folders, except the "General" folder which apparently is not part of the Grafana HTTP Folder API
 def getAllFolders():
@@ -327,36 +333,28 @@ def getAllFolders():
         }
     )
     print(f'There are currently {len(response.json())} folders in Grafana')
-    return json.dumps(response.json(), indent=4)
-    # folder_objects = []
-    # for folder_json in response.json():
-    #     folder_obj = Folder()
-    #     folder_obj.id = folder_json['id']
-    #     folder_obj.uid = folder_json['uid']
-    #     folder_obj.title = folder_json['title']
-    #     folder_objects.append(folder_obj)
-        
-    # return folder_objects
     
-# Enough data to recreate folder structure on github
-print(getAllFolders())
+    if response.status_code == 200:
+        folder_objects = []
+        for folder_json in response.json():
+            folder_obj = Folder(**folder_json)
+            folder_objects.append(folder_obj)
+        
+        return folder_objects
+    else: 
+        raise Exception(f'Request failed code {response.status_code}')
+    
 
-### Using Grafana version history comments as github commit headlines ###
-# What is working?
-# 1. Downloading Grafana Dashboard from Grafana
-# 2. Commiting Grafana Dashboard to GitHub
-# 3. Downloading Grafana Dashboard from GitHub
-# 4. Installing Grafana Dashboard into Grafana
-#   4.1 If the dashboard really got deleted,then step 4 will restore it
-#   4.2 If the dashboard is still existing (given still the same name, folder, uid and id), 
-#       Grafana will refuse to create a new dashboard with the following error 
-#       message: "A dashboard with the same name in the folder already exists" OR
-#       "A dashboard with the same uid already exists"
-#   4.3 If the user wants to replace the existing dashboard with some version from GitHub,
-#       he can enable the overwrite=True option, overwriting the existing dashboard with 
-#       the new data (TEST NECESSARY)!! (INSTALLATION INTO ANYTHING OTHER THAN THEN GENERAL 
-#                                        FOLDER IS CURRENTLY NOT POSSIBLE)
-#   4.4 If the user wants the version from GitHub but also does not want to loose the 
-#       existing version of the dashboard, he can enable the create_copy=True option, 
-#       which will not delete the existing dashboard but rather uploads the GitHub 
-#       dashboard seperately with a name similar to "NAME-Copy-Y/m/d-H:M:S"
+def getDashboardsInFolder(folderId: int):
+    pass
+
+# Enough data to recreate folder structure on github
+# print([folder.id for folder in getAllFolders()])
+# print([folder.uid for folder in getAllFolders()])
+# print([folder.title for folder in getAllFolders()])
+# print([folder.toJSON() for folder in getAllFolders()])
+print([folder.id for folder in getAllFolders()]) # add folderId=0 and title="General"
+
+class CoreCLI():
+    all_folders = []
+    

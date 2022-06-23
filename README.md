@@ -25,3 +25,16 @@
         - Using update in dashboard meta data 
 - Using Grafana version history comments as github commit headlines 
 - Commmand Line Interface using Shell
+- Dokumentation
+
+# Modulstruktur
+- Folder
+- Dashboard
+- Core (CLI)(main)
+    - Calls further methods
+- Connector
+    - GrafanaConnector
+    - GitHubConnector
+- Config 
+    - Scraper-Config.config (into .gitignore)
+        -  For saving API_KEYS

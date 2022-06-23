@@ -1,41 +1,15 @@
-class Folder(object):
+import json
+
+
+class Folder():
+
     def __init__(self, id, uid, title):
-        self.id = id
-        self.uid = uid
-        self.title = title
-        
-    @property
-    def id(self):
-        return self.id
+        if id is not None and uid is not None and title is not None:
+            self.id = id
+            self.uid = uid
+            self.title = title
+        else:
+            raise Exception('Some attributes are None')
 
-    @id.setter
-    def id(self, value):
-        self.id = value
-
-    @id.deleter
-    def id(self):
-        del self.id
-        
-    @property
-    def uid(self):
-        return self.uid
-
-    @uid.setter
-    def uid(self, value):
-        self.uid = value
-
-    @uid.deleter
-    def uid(self):
-        del self.uid
-        
-    @property
-    def title(self):
-        return self.title
-
-    @title.setter
-    def title(self, value):
-        self.title = value
-
-    @title.deleter
-    def title(self):
-        del self.title
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False, indent=4)
