@@ -1,0 +1,1 @@
+core.getCreator() # hidden message

@@ -1,6 +1,5 @@
 import base64
 from datetime import datetime
-from folder import Folder
 import hashlib
 import json
 import requests
@@ -64,7 +63,7 @@ def base64encode(string: str):
         base64_bytes = base64.b64encode(string_bytes)
         base64_string = base64_bytes.decode('ascii')
         return base64_string
-    
+
 # A faster way to compare larger string using MD5 hashes
 def modified(str1: str, str2: str):
     print(hashlib.md5(str1.encode()).hexdigest())
@@ -338,26 +337,26 @@ def reinstallGrafanaJSON(overwrite: bool = False, create_copy: bool = False, fil
 #reinstallGrafanaJSON(folderId=0)
 
 # Get all folders, except the "General" folder which apparently is not part of the Grafana HTTP Folder API
-def getAllFolders():
-    response = requests.get(
-        'http://localhost:3000/api/folders',
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {GRAFANA_API_TOKEN}'
-        }
-    )
-    print(f'There are currently {len(response.json())} folders in Grafana')
+# def getAllFolders():
+#     response = requests.get(
+#         'http://localhost:3000/api/folders',
+#         headers = {
+#             'Accept': 'application/json',
+#             'Content-Type': 'application/json',
+#             'Authorization': f'Bearer {GRAFANA_API_TOKEN}'
+#         }
+#     )
+#     print(f'There are currently {len(response.json())} folders in Grafana')
     
-    if response.status_code == 200:
-        folder_objects = []
-        for folder_json in response.json():
-            folder_obj = Folder(**folder_json)
-            folder_objects.append(folder_obj)
+#     if response.status_code == 200:
+#         folder_objects = []
+#         for folder_json in response.json():
+#             folder_obj = Folder(**folder_json)
+#             folder_objects.append(folder_obj)
         
-        return folder_objects
-    else: 
-        raise Exception(f'Request failed code {response.status_code}')
+#         return folder_objects
+#     else: 
+#         raise Exception(f'Request failed code {response.status_code}')
     
 def getDashboardsInFolder(folderId: int):
     pass

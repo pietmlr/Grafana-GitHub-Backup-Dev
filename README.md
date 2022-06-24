@@ -5,8 +5,7 @@
 3. Downloading Grafana Dashboard from GitHub
 4. Installing Grafana Dashboard into Grafana
     1. If the dashboard really got deleted,then step 4 will restore it
-    1. If the dashboard is still existing (given still the same name, folder, uid and id), 
-    Grafana will refuse to create a new dashboard with the following error 
+    1. If the dashboard is still existing (given still the same name, folder, uid and id, Grafana will refuse to create a new dashboard with the following error 
     message: "A dashboard with the same name in the folder already exists" OR
     "A dashboard with the same uid already exists"
     1. If the user wants to replace the existing dashboard with some version from GitHub,
@@ -18,9 +17,23 @@
     which will not delete the existing dashboard but rather uploads the GitHub 
     dashboard seperately with a name similar to "NAME-Copy-Y/m/d-H:M:S"
 
+## 24.06.2022
+1. The main code (scraper.py) has been broken into modules and classes according to the
+    project graph.
+    * Following modules and classes have been created: 
+        * Grafana
+        * GitHub
+        * Core
+        * CLI
+2. The "sync" command has been brought to the creators attention combining fundamental
+    command "backup" and "publish". It can only be used to synchronise everything, not single files or directories.
+
 # ToDo
-- [ ] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
-- [ ] Test upload of a whole folder
+- [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
+    * Resolved: Grafana structure only allows 1 nested folder
+    * Addtionally: GitHub GraphQL API does not support recursive output of repository 
+        structure
+- [x] Test upload of a whole folder
 
 # Upcoming Features
 - [x] Downloading Grafana dashboard JSON models
@@ -29,22 +42,28 @@
 - [x] Installing Grafana dashboards into Grafana with the following options:
     * overwrite
     * create_copy
-- [ ] Break code into modules
+- [x] Break code into modules
 - [ ] Mirror folder structure of Grafana on GitHub (ACTIVE)
     - [ ] Remirror folder structure on backup from GitHub to Grafana
         - [ ] Using update in dashboard meta data 
 - [ ] Using Grafana version history comments as github commit headlines 
 - [ ] Commmand Line Interface using Shell
-- [ ] Dokumentation
+- [ ] Dokumentation (Daily release notes in Markdown) (ACTIVE)
 
 # Modulstruktur
-- [x] Folder
-- [ ] Dashboard?
-- [ ] Core (CLI)(main)
-    - [ ] Calls further methods
-- [ ] Connector (necessary?)
-    - [ ] GrafanaConnector
-    - [ ] GitHubConnector
-- [ ] Config 
-    - [ ] Scraper-Config.config (into .gitignore)
-        -  For saving API_KEYS
+- [x] Core (CLI)(main)
+    - Interfacing of all system components
+    - Passing input data from shell into certain components
+    - Passing output data back to shell
+    - Parsing and validating input data
+- [x] GitHub
+    - For handling everything that concerns the GitHub REST- and GraphQL API
+- [x] Grafana
+    - For handling everything that concers the Grafana API
+- [x] Config 
+    - [x] config.json (into .gitignore for security purposes)
+        -  For saving: 
+            * API_KEYS
+            * Grafana Login Data
+            * GitHub Repository Owner and Name
+
