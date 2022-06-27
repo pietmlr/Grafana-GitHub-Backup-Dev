@@ -17,14 +17,13 @@ class Config:
     
     def __init__(self):
         # Create it if it does not exist, otherwise load it
-        if os.path.isfile(self.CONFIG_FILENAME):
-            with open(self.CONFIG_FILENAME, 'r') as config_file:
-                json.loads(config_file)
-        else:
+        if not os.path.isfile(self.CONFIG_FILENAME):
             with open(self.CONFIG_FILENAME, 'w') as config_file:
-                config_file.write(self.CONFIG_FILE_SAMPLE)
+                #print(type(self.CONFIG_FILE_SAMPLE), type(json.dumps(self.CONFIG_FILE_SAMPLE)))
+                config_file.write(json.dumps(self.CONFIG_FILE_SAMPLE, indent=4))
         
-        # Validate the if every key-value -pair is existend
+        # Load the config file
+        self.config_file = json.loads(open(self.CONFIG_FILENAME, 'r').read())
 
     def getGitHubKey(self): 
         return self.config_file['GITHUB_API_KEY'] 

@@ -59,10 +59,10 @@ def printHTTPStatus(hsc: int, requestLocation: str):
         print('Something went wrong during the request, not HTTP status code provided')
 
 def base64encode(string: str):
-        string_bytes = string.encode('ascii')
-        base64_bytes = base64.b64encode(string_bytes)
-        base64_string = base64_bytes.decode('ascii')
-        return base64_string
+    string_bytes = string.encode('ascii')
+    base64_bytes = base64.b64encode(string_bytes)
+    base64_string = base64_bytes.decode('ascii')
+    return base64_string
 
 # A faster way to compare larger string using MD5 hashes
 def modified(str1: str, str2: str):
