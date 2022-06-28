@@ -33,7 +33,7 @@
 2. Everything is working, controlled by the core module
 3. Added ArgumentParser for the "backup" command
     1. "python3 core.py backup --everything True" works totally fine
-    2. "python3 core.py backup --path 'folder/dashboard'" is still in testing
+    2. "python3 core.py backup --path 'folder/dashboard'" works totally fine
 
 # ToDo
 - [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
@@ -41,6 +41,9 @@
     * Addtionally: GitHub GraphQL API does not support recursive output of repository 
         structure
 - [x] Test upload of a whole folder
+- [] Finish the publish command
+    - [] Testing publishing options: everything, path, overwrite, copy
+    - [] Expand ArgumentParser to include publishing options
 
 # Upcoming Features
 - [x] Downloading Grafana dashboard JSON models
@@ -50,7 +53,7 @@
     * overwrite
     * create_copy
 - [x] Break code into modules
-- [ ] Mirror folder structure of Grafana on GitHub (ACTIVE)
+- [x] Mirror folder structure of Grafana on GitHub (ACTIVE)
     - [ ] Remirror folder structure on backup from GitHub to Grafana
         - [ ] Using update in dashboard meta data 
 - [ ] Using Grafana version history comments as github commit headlines 
