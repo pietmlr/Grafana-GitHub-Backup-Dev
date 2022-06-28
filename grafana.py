@@ -40,7 +40,7 @@ class Grafana:
         root_folder = path.split('/')[0]
         dashboard_title = path.split('/')[1]
         
-        print(f'Searching for "{dashboard_title}" in "{root_folder}"')
+        print(f'Searching for "{dashboard_title}" in "{root_folder}" on Grafana')
         
         query_string = self.URL + \
                        self.GRAFANA_API_ENDPOINTS['SEARCH'] + \
@@ -62,17 +62,39 @@ class Grafana:
                 # Check for the right dashboard by comparing the root folder name (the same 
                 # name for a dashboard in a folder is not allowed)
                 for found_dashboard in grafana_json:
-                    if found_dashboard['folderTitle'] == root_folder:
+                    if 'folderTitle' in found_dashboard:
+                        if found_dashboard['folderTitle'] == root_folder:
+                            return found_dashboard['uid']
+                        else: print(f'Could not find "{dashboard_title}" in "{root_folder}"')
+                    else:
+                        # Case: Dashboard is in the General folder
                         return found_dashboard['uid']
-                    else: print(f'Could not find "{dashboard_title}" in "{root_folder}"')
             else: print(f'Could not find "{dashboard_title}" in "{root_folder}"')
         else: 
             error_message = grafana_response.json()['message']
             raise Exception(f'Error Searching Grafana API for {dashboard_title}: {error_message}; Query String: {query_string}')
 
-    def getDashboard(self, path: str) -> dict:
+    def getDashboard(self, path: str, dashboard_uid: str) -> dict:
+        """Downloads the Dashboard JSON model from Grafana given the path to it
+
+        Args:
+            path (str): path to dashboard in Grafana (e.g.: "folder 1/Dashboard 1")
+                        Insert '-1' to use option --everything and use dashboard_uid function
+                        argument to directly pass a dashboard_uid
+            dashboard_uid (str): dashboard_uid from a Grafana dashboard
+                        Insert '-1' to use option --path and use the path function argument
+            
+        Raises:
+            Exception: _description_
+
+        Returns:
+            dict: Grafana dashboard JSON model
+        """
+        if path != '-1' and dashboard_uid == '-1':
+            dashboard_uid = self.getDashboardUidFromPath(path)
+        elif path == '-1' and dashboard_uid != '-1':
+            pass
         
-        dashboard_uid = self.getDashboardUidFromPath(path)
         query_string = self.URL +  self.GRAFANA_API_ENDPOINTS['DASHBOARD_UID'] + dashboard_uid
         
         grafana_response = requests.get(
@@ -84,14 +106,13 @@ class Grafana:
         http_status_code = grafana_response.status_code
         if http_status_code == 200:
             grafana_json = grafana_response.json()
-            return json.dumps(grafana_json, indent=4)
+            return grafana_json
         else: 
             error_message = grafana_response.json()['message']
             raise Exception(f'Error downloading Grafana JSON Model for "{path}": {error_message}; Query String: {query_string}')
 
-#### Unused methods ####
-    def getAllFolders(self) -> list:
-        query_string = self.GRAFANA_URL + self.GRAFANA_API_ENDPOINTS['FOLDERS']
+    def getAllFoldersIds(self) -> list:
+        query_string = self.URL + self.GRAFANA_API_ENDPOINTS['FOLDERS']
         
         response = requests.get(
             query_string,
@@ -100,12 +121,14 @@ class Grafana:
         )
         
         if response.status_code == 200:
-            # Only returning the folder ids, appending 0 to the list to include the general folder HAS TO BE DONE
-            return [folder_json['id'] for folder_json in response.json()]
+            # Only returning the folder ids, appending 0 to the list to include the general folder
+            folder_ids = [folder_json['id'] for folder_json in response.json()]
+            folder_ids.append(0)
+            return folder_ids
         else: 
             raise Exception(f'Request to Grafana failed, code {response.status_code}')
 
-    def getDashboardUIDs(self, folderId: int):
+    def getDashboardUIDs(self, folderId: int) -> list:
         query_string = self.URL + self.GRAFANA_API_ENDPOINTS['SEARCH'] + f'folderIds={folderId}'
         
         # Get dashboards inside a certain folder using folderId
@@ -116,12 +139,8 @@ class Grafana:
         )
         
         #print(json.dumps(grafana_response.json(), indent=4))
-        
-        # folderUrl example: 
-        # --> ("folderUrl": "/dashboards/f/TaAt1N37k/folder-1") 
-        # --> ("folderUrl": "/dashboards/f/:dashboard-uid/:folder-name")
         dashboard = Dashboard(grafana_response.json())
-        return dashboard.getDashboardUid()
+        return [dashboard.getDashboardUid(), dashboard.getRootFolder()]
 
 # from path/to/dashboard to dashboard uid
 # possibilites:

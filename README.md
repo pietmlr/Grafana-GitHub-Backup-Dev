@@ -28,6 +28,13 @@
 2. The "sync" command has been brought to the creators attention combining fundamental
     command "backup" and "publish". It can only be used to synchronise everything, not single files or directories.
 
+## 27.06.2022
+1. Transition to a fully modular approach is done
+2. Everything is working, controlled by the core module
+3. Added ArgumentParser for the "backup" command
+    1. "python3 core.py backup --everything True" works totally fine
+    2. "python3 core.py backup --path 'folder/dashboard'" is still in testing
+
 # ToDo
 - [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
     * Resolved: Grafana structure only allows 1 nested folder

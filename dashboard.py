@@ -1,6 +1,6 @@
 class Dashboard:
     """
-    Simple Dashboard structure for storing fundamental Dashboard data 
+    Simple Dashboard structure for storing and retrieving fundamental Dashboard data 
     """
 
     def __init__(self, grafana_api_reponse: dict):
@@ -11,7 +11,16 @@ class Dashboard:
     
     # From http://localhost:3000/api/search?folderIds=
     def getRootFolder(self) -> list:
-        return [dashboard['folderTitle'] for dashboard in self.grafana_api_response]
+        # root_folder = []
+        # for dashboard in self.grafana_api_response:
+        #     if self.isDashboard(dashboard):
+        #         if 'folderTitle' in dashboard:
+        #             root_folder.append(dashboard['folderTitle'])
+        #         else:
+        #             root_folder.append('General')
+        #     else:
+        #         root_folder.append('-1')
+        return [dashboard['folderTitle'] if 'folderTitle' in dashboard else 'General' if self.isDashboard(dashboard) else '-1' for dashboard in self.grafana_api_response]
 
     # From http://localhost:3000/api/search?folderIds=
     def getDashboardUid(self) -> list:
