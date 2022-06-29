@@ -37,7 +37,7 @@ publish.add_argument('--test', type=bool)
 
 # Combinations
 publish_parameter_combinations = """
-    # --commit-id & --path  (works only if there is no dashboard with the same name or uid on this path!)
+    # --commit-id & --path  (works only if there is no dashboard with the same name or uid on the given path!)
     # --commit-id & --path & --overwrite
     # --commit-id & --path & --create-copy
 
@@ -94,11 +94,16 @@ if args.command == 'backup':
 ### Publish Command Section ###
 elif args.command == 'publish':
     if args.commit_id and args.path:
-        if args.overwrite: pass
-        elif args.create_copy: pass
+        if args.overwrite and args.path: pass
+        elif args.create_copy and args.path: pass
         else: 
             backup_file = github.downloadFileFromCommit(args.commit_id, args.path)
-            grafana.installDashboard(dashboard_model=backup_file, path=args.path, 
+            if backup_file is None:
+                print(Fore.RED + Style.BRIGHT + 
+                      f'The file you chose is not on the provided path ({args.path}) on GitHub' +
+                      Fore.RESET + Style.RESET_ALL)
+            else:
+                grafana.installDashboard(dashboard_model=backup_file, path=args.path, 
                                      commit_oid=args.commit_id)
             
     elif args.everything:

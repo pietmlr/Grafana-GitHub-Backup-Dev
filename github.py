@@ -63,10 +63,10 @@ class GitHub:
             #             upload_new = False
                     else: 
                         current_file_content = None
-            #             #print(f'The file "{path}" does not exist in the current repository')
-            #             upload_new = True
-            # else: 
-            #     upload_new = True
+                        #print(f'The file "{path}" does not exist in the current repository')
+                        #upload_new = True
+            else: 
+                current_file_content = None
         
         # If the file already exists on GitHub
         #print('this:', json.dumps(current_file_content, indent=4))
@@ -235,7 +235,12 @@ class GitHub:
         if commit_files.status_code == 200:
             return json.loads(self.base64decode(json.dumps(commit_files.json()['content'], indent=4)))
         else:
-            print('Couldn\'t download file from GitHub: ' + str(commit_files.status_code) + ' -> ' + commit_files.json()['message'])
+            print(Fore.RED + 
+                  'Couldn\'t download file from GitHub: ' + 
+                  str(commit_files.status_code) + 
+                  ' -> ' + 
+                  commit_files.json()['message'] +
+                  Fore.RESET)
   
     def base64encode(self, string: str):
         string_bytes = string.encode('ascii')

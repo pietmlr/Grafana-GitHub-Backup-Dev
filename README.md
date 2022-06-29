@@ -25,15 +25,42 @@
         * GitHub
         * Core
         * CLI
-2. The "sync" command has been brought to the creators attention combining fundamental
-    command "backup" and "publish". It can only be used to synchronise everything, not single files or directories.
+2. The "sync" command has been added as an idea to easily combine the fundamental
+    commands "backup" and "publish". It can only be used to synchronise everything, not single files or directories.
 
 ## 27.06.2022
+1. Added dashboard structure
+2. WIP on the transition to modularization
+3. Further improvements
+
+## 28.06.2022
 1. Transition to a fully modular approach is done
-2. Everything is working, controlled by the core module
-3. Added ArgumentParser for the "backup" command
+2. Everything is controlled by the core module
+3. Terminal ouput is prettified using colorama
+4. Added ArgumentParser for the "backup" command
     1. "python3 core.py backup --everything True" works totally fine
     2. "python3 core.py backup --path 'folder/dashboard'" works totally fine
+
+## 29.06.2022
+1. The whole backup functionality is working
+2. Better Error messages and hints for what went wrong or could go wrong
+3. Syntax highlighting: More important terminal output is highlighted bolder and more colorful
+4. The "publish" command has got better error handling and a list of working parameters combinations has also been added:
+    ~~~
+    [x] --commit-id & --path        (works only if there is no dashboard with the same name or uid on the given path!)
+    [ ] --commit-id & --path & --overwrite
+    [ ] --commit-id & --path & --create-copy
+
+    [ ] --everything                (ONLY uses latest commits!)
+    [ ] --everthing & --overwrite   (ONLY uses latest commits!)
+    [ ] --everthing & --create-copy (ONLY uses latest commits!)
+    ~~~
+5. Current execution is possible by typing following commands:
+    ~~~
+    python3 core.py backup --path <path/to/db> --everything <True/False>
+    python3 core.py publish --commit_id <commit-oid> --path <path/to/db> --everything <True/False> --overwrite <True/False>
+    (python3 core.py sync)
+    ~~~
 
 # ToDo
 - [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
@@ -43,7 +70,7 @@
 - [x] Test upload of a whole folder
 - [] Finish the publish command
     - [] Testing publishing options: everything, path, overwrite, copy
-    - [] Expand ArgumentParser to include publishing options
+    - [x] Expand ArgumentParser to include publishing options
 
 # Upcoming Features
 - [x] Downloading Grafana dashboard JSON models
