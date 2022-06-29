@@ -1,5 +1,7 @@
+from colorama import Fore, Style
 from config import Config
 from dashboard import Dashboard
+from datetime import datetime
 import requests
 import json
 
@@ -7,7 +9,8 @@ class Grafana:
     GRAFANA_API_ENDPOINTS = {
         'SEARCH': '/api/search?',
         'DASHBOARD_UID': '/api/dashboards/uid/',
-        'FOLDERS': '/api/folders'
+        'FOLDERS': '/api/folders',
+        'CREATE_DASHBOARD': '/api/dashboards/db'
     }
     
     def __init__(self, config: Config):
@@ -142,14 +145,104 @@ class Grafana:
         dashboard = Dashboard(grafana_response.json())
         return [dashboard.getDashboardUid(), dashboard.getRootFolder()]
 
-# from path/to/dashboard to dashboard uid
-# possibilites:
-# - 1 (for backuping everything)
-#   - get all folder ids
-#   - get every dashboard uid in every folder id
-#   - get every dashboard by dashboard uid
-# - 2 (back up a single dashboard by path)
-#   - get path e.g.: folder 5/dashboard 3
-#   - use grafana dashboard/folder search api
-#   - get back the dashboard uid
-#   - use dashboard uid to get a whole dashboard JSON model
+    def installDashboard(self, dashboard_model: dict, path: str, commit_oid: str, overwrite: bool = False, create_copy: bool = False, everything: bool = False):
+    
+        # Get title and meta data for installation
+        dashboard_name = dashboard_model['dashboard']['title']
+        #print(json.dumps(dashboard_model, indent=4))
+        path_split = path.split('/')
+        root_folder = path_split[0]
+        filename = path_split[1]
+        
+        root_folder = root_folder.replace(' ', '%20')
+        #print(root_folder)
+        # Get folderId and folderUid from folderTitle from Grafana Dashbord/Folder Search API
+        if root_folder != 'General':
+            query_string = self.URL + \
+                           self.GRAFANA_API_ENDPOINTS['SEARCH'] + \
+                           f'?query=' + root_folder + \
+                           '&type=dash-folder'
+                           
+            folder_meta_data = requests.get(
+                query_string,
+                headers=self.GRAFANA_HEADERS,
+                auth=self.GRAFANA_AUTH
+            )
+            
+            for folder in folder_meta_data.json():
+                if folder['title'] == root_folder:
+                    folderId = folder['id']
+                    folderUid = folder['Uid']
+                    # Meta data changes for installing the dashboard into the desired location
+                    # TODO: Which of these is really necessary??
+                    dashboard_model['meta'].update(folderId=folderId)
+                    dashboard_model['dashboard'].update(folderUid=folderUid)
+        else:
+            folderId = 0
+
+        dashboard_model['meta'].update(folderTitle=root_folder)
+        
+        # Check parameters and act accordingly
+        if overwrite:
+            dashboard_model['dashboard'].update(overwrite=True)
+            create_copy = False
+            print('Overwriting selected dashboards in Grafana')
+        elif create_copy:
+            # Update dashboard name
+            dashboard_name_suffix = '-Copy-' + datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+            new_dashboard_name = dashboard_name + dashboard_name_suffix
+            dashboard_model['dashboard'].update(title=new_dashboard_name)
+            overwrite = False
+            
+            # Swap out existing uid to None (NULL) to prevent installation error due to not 
+            # finding the dashboard (uid) by Grafana API, uid=NULL will generated a new uid
+            dashboard_model['dashboard'].update(uid=None)
+            dashboard_model['dashboard'].update(id=None)
+            
+            print('Creating a copy of the old dashboard with selected commit changes')
+            
+        #dashboard_model['meta'].update(folderUrl=folderUrl)
+        
+        # Update version in meta data to prevent version mismatch errors
+        current_version = dashboard_model['dashboard']['version']
+        # Increment version by 0.1 at every installation
+        dashboard_model['meta'].update(version=current_version + 0.1)
+
+        # example_request = {
+        #     'dashboard': {
+        #         'id': None,
+        #         'uid': None,
+        #         'title': dashboard_name,
+        #         'tags': ['testing'],
+        #         'timezone': 'browser',
+        #         'schemaVersion': 16,
+        #         'version': 0,
+        #         'refresh': '25s'
+        #     },
+        #     'folderId': folderId,
+        #     'message': commit_oid,
+        #     'overwrite': overwrite
+        # }
+        
+        print(Style.DIM + f'Dashboard name: {dashboard_name}' + Style.RESET_ALL)
+        
+        query_string = self.URL + self.GRAFANA_API_ENDPOINTS['CREATE_DASHBOARD']
+        
+        reinstall_dashboard_response = requests.post(
+            query_string,
+            json=dashboard_model,
+            headers=self.GRAFANA_HEADERS,
+            auth=self.GRAFANA_AUTH
+        )
+        
+        # Get folder name from folderIds
+        if reinstall_dashboard_response.status_code == 200:
+            print(json.dumps(reinstall_dashboard_response.json(), indent=4))
+            print(Fore.GREEN + Style.BRIGHT + 
+                  f'The installation of "{dashboard_name}" at "{root_folder}" was successfull' +
+                  Fore.RESET + Style.RESET_ALL)
+        else:
+            print(Fore.RED + Style.BRIGHT + 
+                  json.dumps(reinstall_dashboard_response.json()['message'], indent=4) + 
+                  f'HTTP status code: {str(reinstall_dashboard_response.status_code)}' +
+                  Fore.RESET + Style.RESET_ALL)

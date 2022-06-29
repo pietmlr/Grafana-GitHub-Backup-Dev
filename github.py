@@ -1,13 +1,15 @@
 import base64
-from datetime import datetime
 from config import Config
+from colorama import Fore, Style
+from datetime import datetime
 import hashlib
 import json
 import requests
-from colorama import Fore, Style
 
 
 class GitHub:
+    
+    FORBIDDEN_CHARS = ['/', '&', '?', '.', ',', '%', '"', '+', '=']
     
     def __init__(self, config: Config):
         self.config = config
@@ -32,7 +34,18 @@ class GitHub:
         #filename = dashboard['dashboard']['title']
         path_data = path.split('/')
         root_folder = path_data[0]
-        filename = path_data[1] + '.json'
+        filename = path_data[1]
+        
+        # Sanity check
+        for forbidden_char in self.FORBIDDEN_CHARS:
+            if forbidden_char in filename:
+                print(Fore.RED + Style.BRIGHT +
+                      'The process of commiting was stopped due to invalid characters in the dashboards name\n' +
+                      '--> Please change your dashboard name according to the character policy display on start' +
+                      Fore.RESET + Style.RESET_ALL)
+                return
+            
+        filename = filename + '.json'
         path = path + '.json'
 
         #print(self.downloadRepositoryFileContents())
@@ -87,7 +100,7 @@ class GitHub:
             }
         """ 
         
-        commit_headline = datetime.now().strftime('%Y/%m/%d-%H:%M:%S')
+        commit_headline = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
         commit_variables = {
             'input': {
@@ -125,7 +138,8 @@ class GitHub:
         current_commit_url = json.loads(commit_response)['data']['createCommitOnBranch']['commit']['url']
         current_commit_oid = json.loads(commit_response)['data']['createCommitOnBranch']['commit']['oid']
         
-        print(Fore.MAGENTA + f'Commited Grafana Dashboard "{path}" to GitHub [Commit-OiD: (short) {current_commit_oid[:7]}, (long) {current_commit_oid}]\n' + Style.DIM + 'Accessible through the following URL: {current_commit_url}' + Fore.RESET, Style.RESET_ALL)
+        print(Fore.MAGENTA + Style.BRIGHT + f'Commited Grafana Dashboard "{path}" to GitHub [Commit-OiD: (short) {current_commit_oid[:7]}, (long) {current_commit_oid}]\n' + 
+              Style.DIM + f'Accessible through the following URL: {current_commit_url}' + Fore.RESET, Style.RESET_ALL)
 
     def commitValidation(): pass
     
@@ -206,12 +220,35 @@ class GitHub:
         most_recent_commit_oid = json.dumps(oid_query.json(), indent=4)
         
         return most_recent_commit_oid
-    
+  
+    def downloadFileFromCommit(self, commit_oid: str, path: str):
+        
+        path = path.replace(' ', '%20')
+        query_string = f'https://api.github.com/repos/{self.GITHUB_REPO_OWNER}/{self.GITHUB_REPO_NAME}/contents/{path}?ref={commit_oid}'
+        #print(query_string)
+        
+        commit_files = requests.get(
+            query_string,
+            headers = self.GITHUB_HEADERS
+        )
+
+        if commit_files.status_code == 200:
+            return json.loads(self.base64decode(json.dumps(commit_files.json()['content'], indent=4)))
+        else:
+            print('Couldn\'t download file from GitHub: ' + str(commit_files.status_code) + ' -> ' + commit_files.json()['message'])
+  
     def base64encode(self, string: str):
         string_bytes = string.encode('ascii')
         base64_bytes = base64.b64encode(string_bytes)
         base64_string = base64_bytes.decode('ascii')
         return base64_string
+    
+    def base64decode(self, base64_input: str):
+        base64_input = base64_input.replace('\\n', '\n')
+        base64_bytes = base64_input.encode('ascii')
+        string_bytes = base64.b64decode(base64_bytes)
+        decoded_string = string_bytes.decode('ascii')
+        return decoded_string
     
     # A faster way to compare larger string using MD5 hashes
     def modified(self, upload_str: str, current_str: str):
