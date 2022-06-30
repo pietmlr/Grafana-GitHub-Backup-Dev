@@ -4,3 +4,6 @@ grafana.json
 infos.txt
 plan.txt
 x.json
+api_testing.py
+cli.py
+scraper.py

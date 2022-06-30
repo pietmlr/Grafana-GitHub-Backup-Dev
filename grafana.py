@@ -6,7 +6,7 @@ import requests
 import json
 
 class Grafana:
-    GRAFANA_API_ENDPOINTS = {
+    _GRAFANA_API_ENDPOINTS = {
         'SEARCH': '/api/search?',
         'DASHBOARD_UID': '/api/dashboards/uid/',
         'FOLDERS': '/api/folders',
@@ -46,7 +46,7 @@ class Grafana:
         print(f'Searching for "{dashboard_title}" in "{root_folder}" on Grafana')
         
         query_string = self.URL + \
-                       self.GRAFANA_API_ENDPOINTS['SEARCH'] + \
+                       self._GRAFANA_API_ENDPOINTS['SEARCH'] + \
                        f'query={dashboard_title}'
         
         grafana_response = requests.get(
@@ -88,7 +88,7 @@ class Grafana:
                         Insert '-1' to use option --path and use the path function argument
             
         Raises:
-            Exception: _description_
+            Exception: Error if Grafana model failed downloading
 
         Returns:
             dict: Grafana dashboard JSON model
@@ -98,7 +98,7 @@ class Grafana:
         elif path == '-1' and dashboard_uid != '-1':
             pass
         
-        query_string = self.URL +  self.GRAFANA_API_ENDPOINTS['DASHBOARD_UID'] + dashboard_uid
+        query_string = self.URL +  self._GRAFANA_API_ENDPOINTS['DASHBOARD_UID'] + dashboard_uid
         
         grafana_response = requests.get(
             query_string, 
@@ -115,7 +115,7 @@ class Grafana:
             raise Exception(f'Error downloading Grafana JSON Model for "{path}": {error_message}; Query String: {query_string}')
 
     def getAllFoldersIds(self) -> list:
-        query_string = self.URL + self.GRAFANA_API_ENDPOINTS['FOLDERS']
+        query_string = self.URL + self._GRAFANA_API_ENDPOINTS['FOLDERS']
         
         response = requests.get(
             query_string,
@@ -132,7 +132,7 @@ class Grafana:
             raise Exception(f'Request to Grafana failed, code {response.status_code}')
 
     def getDashboardUIDs(self, folderId: int) -> list:
-        query_string = self.URL + self.GRAFANA_API_ENDPOINTS['SEARCH'] + f'folderIds={folderId}'
+        query_string = self.URL + self._GRAFANA_API_ENDPOINTS['SEARCH'] + f'folderIds={folderId}'
         
         # Get dashboards inside a certain folder using folderId
         grafana_response = requests.get(
@@ -141,9 +141,11 @@ class Grafana:
             auth = self.GRAFANA_AUTH
         )
         
-        #print(json.dumps(grafana_response.json(), indent=4))
-        dashboard = Dashboard(grafana_response.json())
-        return [dashboard.getDashboardUid(), dashboard.getRootFolder()]
+        if grafana_response.status_code == 200:    
+            dashboard = Dashboard(grafana_response.json())
+            return [dashboard.getDashboardUid(), dashboard.getRootFolder()]
+        else:
+            raise Exception(f'Error: Failed request to Grafana; HTTP status code: {grafana_response.status_code}; Query string: {query_string}')
 
     def installDashboard(self, dashboard_model: dict, path: str, commit_oid: str, overwrite: bool = False, create_copy: bool = False, everything: bool = False):
     
@@ -159,7 +161,7 @@ class Grafana:
         # Get folderId and folderUid from folderTitle from Grafana Dashbord/Folder Search API
         if root_folder != 'General':
             query_string = self.URL + \
-                           self.GRAFANA_API_ENDPOINTS['SEARCH'] + \
+                           self._GRAFANA_API_ENDPOINTS['SEARCH'] + \
                            f'?query=' + root_folder_url + \
                            '&type=dash-folder'
                            
@@ -169,21 +171,21 @@ class Grafana:
                 auth=self.GRAFANA_AUTH
             )
             
-            #print(json.dumps(folder_meta_data.json(), indent=4))
-            
-            for folder in folder_meta_data.json():
-                if folder['title'] == root_folder:
-                    folderId = folder['id']
-                    folderUid = folder['uid']
-                    # Meta data changes for installing the dashboard into the desired location
-                    # TODO: Which of these is really necessary??
-                    dashboard_model.update(folderId=folderId)
-                    dashboard_model.update(folderUid=folderUid)
+            if folder_meta_data.status_code == 200:
+                for folder in folder_meta_data.json():
+                    if folder['title'] == root_folder:
+                        folderId = folder['id']
+                        folderUid = folder['uid']
+                        # Meta data changes for installing the dashboard into the desired location
+                        # TODO: Which of these is really necessary??
+                        dashboard_model.update(folderId=folderId)
+                        dashboard_model.update(folderUid=folderUid)       
+            else:
+                raise Exception(f'Failed request to Grafana; HTTP status code: {folder_meta_data.status_code}; Query string: {query_string}')
         else:
             folderId = 0
 
         dashboard_model['meta'].update(folderTitle=root_folder)
-        dashboard_model['dashboard'].update(message=commit_oid)
         
         ## IF dashboard deleted OR shall be overwritten
         # Swap out existing uid to None (NULL) to prevent installation error due to not 
@@ -193,7 +195,8 @@ class Grafana:
         
         # Check parameters and act accordingly
         if overwrite:
-            dashboard_model['dashboard'].update(overwrite=True)
+            # if that does not work, change dashboard_model['dashboard'] to dashboard_model
+            dashboard_model.update(overwrite=True)
             create_copy = False
             print('Overwriting selected dashboards in Grafana')
         elif create_copy:
@@ -208,7 +211,8 @@ class Grafana:
             dashboard_model['dashboard'].update(uid=None)
             dashboard_model['dashboard'].update(id=None)
             
-            print('Creating a copy of the old dashboard with selected commit changes')
+            print(Style.DIM + 'Creating a copy of the old dashboard with selected commit changes' +
+                  Style.RESET_ALL)
         
         # Update version in meta data to prevent version mismatch errors
         # Increment version by 0.1 at every installation
@@ -232,11 +236,14 @@ class Grafana:
         #     'overwrite': overwrite
         # }
         
+        # Add the commit-oid as message for what has changed
+        dashboard_model.update(message=commit_oid)
+        
         print(Style.DIM + f'Dashboard name: "{dashboard_name}"' + Style.RESET_ALL)
         
-        print(f'Model to upload: {json.dumps(dashboard_model, indent=4)}')
+        #print(f'Model to upload: {json.dumps(dashboard_model, indent=4)}')
         
-        query_string = self.URL + self.GRAFANA_API_ENDPOINTS['CREATE_DASHBOARD']
+        query_string = self.URL + self._GRAFANA_API_ENDPOINTS['CREATE_DASHBOARD']
         
         reinstall_dashboard_response = requests.post(
             query_string,
@@ -247,10 +254,15 @@ class Grafana:
         
         # Get folder name from folderIds
         if reinstall_dashboard_response.status_code == 200:
-            print(json.dumps(reinstall_dashboard_response.json(), indent=4))
-            print(Fore.GREEN + Style.BRIGHT + 
-                  f'The installation of "{dashboard_name}" at "{root_folder}" was successfull' +
-                  Fore.RESET + Style.RESET_ALL)
+            #print(json.dumps(reinstall_dashboard_response.json(), indent=4))
+            if not create_copy:
+                print(Fore.GREEN + Style.BRIGHT + 
+                    f'The installation of "{dashboard_name}" at "{root_folder}" was successful' +
+                    Fore.RESET + Style.RESET_ALL)
+            else:
+                print(Fore.GREEN + Style.BRIGHT + 
+                      f'Successfully installed dashboard "{dashboard_name}" at "{root_folder}"' + 
+                      Fore.RESET + Style.RESET_ALL)
         else:
             print(Fore.RED + Style.BRIGHT + 
                   json.dumps(reinstall_dashboard_response.json()['message'], indent=4) + 

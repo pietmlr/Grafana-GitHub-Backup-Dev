@@ -9,7 +9,7 @@ import requests
 
 class GitHub:
     
-    FORBIDDEN_CHARS = ['/', '&', '?', '.', ',', '%', '"', '+', '=']
+    _FORBIDDEN_CHARS = ['/', '&', '?', '.', ',', '%', '"', '+', '=']
     
     def __init__(self, config: Config):
         self.config = config
@@ -22,7 +22,7 @@ class GitHub:
             'Authorization': f'Bearer {self.API_KEY}'
         }
     
-    def commitDashboard(self, dashboard: dict, path: str): 
+    def commitDashboard(self, dashboard: dict, path: str, commit_message: str): 
         """
         commit_headline_message: str, foldername: str
         """
@@ -37,7 +37,7 @@ class GitHub:
         filename = path_data[1]
         
         # Sanity check
-        for forbidden_char in self.FORBIDDEN_CHARS:
+        for forbidden_char in self._FORBIDDEN_CHARS:
             if forbidden_char in filename:
                 print(Fore.RED + Style.BRIGHT +
                       'The process of commiting was stopped due to invalid characters in the dashboards name\n' +
@@ -100,7 +100,8 @@ class GitHub:
             }
         """ 
         
-        commit_headline = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        commit_date = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        commit_message_standard = f'Backup of "{path}" {commit_date}'
 
         commit_variables = {
             'input': {
@@ -109,7 +110,7 @@ class GitHub:
                     'branchName': 'main'
                 },
                 'message': {
-                    'headline': f'Backup of "{path}" {commit_headline}'
+                    'headline': commit_message_standard if commit_message == '-1' else commit_message
                 },
                 'fileChanges': {
                     'additions': [
@@ -144,7 +145,7 @@ class GitHub:
     def commitValidation(): pass
     
     # cant download recursively --> nested limit of 1 folder, so: folder_xy/file.abc
-    def downloadRepositoryFileContents(self):
+    def downloadRepositoryFileContents(self) -> str:
         
         # GraphQL query
         current_content = """

@@ -1,4 +1,16 @@
 # Release Notes
+
+## Summary
+PIET is an acronym for (P I E T). It is a backup tool for Grafana which is only able to store dashboard versions on the local harddrive, making it difficult to recover dashboards in the case of i.e. an outage. PIET solves this problem by providing a user with backup and publish commands to backup all/certain dashboards 
+
+## Installation
+1. Clone repository into folder ```piet```
+1. ```cd piet```
+1. ```ln -s core.py ./bin/piet```
+1. ```chmod +x ./bin/piet```
+1. ```export PATH="piet/bin:$PATH"``` into .zshrc or .bashrc
+1. Restart terminal
+
 ## 20.06.2022 - 23.06.2022
 1. Downloading Grafana Dashboard from Grafana
 2. Commiting Grafana Dashboard to GitHub
@@ -48,7 +60,7 @@
 4. The "publish" command has got better error handling and a list of working parameters combinations has also been added:
     ~~~
     [x] --commit-id & --path        (works only if there is no dashboard with the same name or uid on the given path!)
-    [ ] --commit-id & --path & --overwrite
+    [x] --commit-id & --path & --overwrite
     [ ] --commit-id & --path & --create-copy
 
     [ ] --everything                (ONLY uses latest commits!)
@@ -61,6 +73,8 @@
     python3 core.py publish --commit_id <commit-oid> --path <path/to/db> --everything <True/False> --overwrite <True/False>
     (python3 core.py sync)
     ~~~
+
+## 30.06.2022
 
 # ToDo
 - [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
@@ -104,3 +118,4 @@
             * Grafana Login Data
             * GitHub Repository Owner and Name
 
+### Developed @ Adobe, Used by Adobe Systems Engineering GmbH

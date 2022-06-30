@@ -24,6 +24,15 @@ class Config:
         
         # Load the config file
         self.config_file = json.loads(open(self.CONFIG_FILENAME, 'r').read())
+        
+    def checkConfig(self):
+        user_keys = self.config_file.keys()
+        for user_key in user_keys:
+            for system_key in self.CONFIG_FILE_SAMPLE:
+                if user_key != system_key:
+                    print(f'Your configuration file is invalid, take a look at {user_key}')
+                    return False
+                else: return True
 
     def getGitHubKey(self): 
         return self.config_file['GITHUB_API_KEY'] 
