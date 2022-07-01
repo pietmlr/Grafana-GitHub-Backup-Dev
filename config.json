@@ -1,10 +1,10 @@
 {
-    "GITHUB_API_KEY": "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",
-    "GRAFANA_API_KEY": "eyJrIjoiV29ycTJvOG55VUo0V1pDVVhWOGh3UDRnRmI0UHppMjkiLCJuIjoicHJha3Rpa3VtMiIsImlkIjoxfQ",
-    "GITHUB_REPOSITORY_OWNER": "pietmlr",
-    "GITHUB_REPOSITORY_NAME": "grafana-github-backup",
+    "GITHUB_API_KEY": "YOUR_API_KEY",
+    "GRAFANA_API_KEY": "YOUR_API_KEY",
+    "GITHUB_REPOSITORY_OWNER": "REPO_OWNER",
+    "GITHUB_REPOSITORY_NAME": "REPO_NAME",
     "GITHUB_URL": "https://api.github.com/graphql",
     "GRAFANA_URL": "http://localhost:3000",
-    "GRAFANA_USER": "admin",
-    "GRAFANA_PASSWORD": "admin"
+    "GRAFANA_USER": "GRAFANA_USER",
+    "GRAFANA_PASSWORD": "GRAFANA_PASS"
 }
