@@ -7,4 +7,8 @@
     "GRAFANA_URL": "http://localhost:3000",
     "GRAFANA_USER": "GRAFANA_USER",
     "GRAFANA_PASSWORD": "GRAFANA_PASS"
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> aca9dfba9c98c8bebbda788f81057e2eb2f9d1b4
