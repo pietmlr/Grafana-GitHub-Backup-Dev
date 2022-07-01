@@ -1,14 +1,14 @@
 # Release Notes
 
 ## Summary
-PIET is an acronym for (P I E T). It is a backup tool for Grafana which is only able to store dashboard versions on the local harddrive, making it difficult to recover dashboards in the case of i.e. an outage. PIET solves this problem by providing a user with backup and publish commands to backup all/certain dashboards 
+PIET is an acronym for (Pleasant and Intelligent grafana-backup Execution Tool). It is a backup tool for Grafana which is only able to store dashboard versions on the local harddrive, making it difficult to recover dashboards in the case of i.e. an outage. PIET solves this problem by providing a user with backup and publish commands to backup all/certain dashboards and install backed up version of them.
 
 ## Installation
 1. Clone repository into folder ```piet```
 1. ```cd piet```
 1. ```ln -s core.py ./bin/piet```
 1. ```chmod +x ./bin/piet```
-1. ```export PATH="piet/bin:$PATH"``` into .zshrc or .bashrc
+1. ```export PATH="piet/bin:$PATH"``` into ~/.zshrc or ~/.bashrc
 1. Restart terminal
 
 ## 20.06.2022 - 23.06.2022
