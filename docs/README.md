@@ -75,33 +75,11 @@ PIET is an acronym for (Pleasant and Intelligent grafana-backup Execution Tool).
     ~~~
 
 ## 30.06.2022
+1. Finished publish command functionality
+2. Fixed the last bugs
+3. Done!
 
-# ToDo
-- [x] Check if downloadRepositoryFileContents() return nested file structure and parse JSON accordingly
-    * Resolved: Grafana structure only allows 1 nested folder
-    * Addtionally: GitHub GraphQL API does not support recursive output of repository 
-        structure
-- [x] Test upload of a whole folder
-- [] Finish the publish command
-    - [] Testing publishing options: everything, path, overwrite, copy
-    - [x] Expand ArgumentParser to include publishing options
-
-# Upcoming Features
-- [x] Downloading Grafana dashboard JSON models
-- [x] Commiting Grafana dashboard JSON models to GitHub
-- [x] Downloading Grafana dashboard JSON models from GitHub
-- [x] Installing Grafana dashboards into Grafana with the following options:
-    * overwrite
-    * create_copy
-- [x] Break code into modules
-- [x] Mirror folder structure of Grafana on GitHub (ACTIVE)
-    - [ ] Remirror folder structure on backup from GitHub to Grafana
-        - [ ] Using update in dashboard meta data 
-- [ ] Using Grafana version history comments as github commit headlines 
-- [ ] Commmand Line Interface using Shell
-- [ ] Dokumentation (Daily release notes in Markdown) (ACTIVE)
-
-# Modulstruktur
+# Modulestructure
 - [x] Core (CLI)(main)
     - Interfacing of all system components
     - Passing input data from shell into certain components
